@@ -140,6 +140,8 @@ input[type=range]{width:100%;accent-color:var(--ac);height:32px}
 .cropbox.cav{max-width:320px;align-self:center}.cropbox.cav .mask{border-radius:22%;box-shadow:0 0 0 999px rgba(0,0,0,.55)}
 img.sq{object-fit:cover;background:var(--sf2)}
 .req{display:flex;align-items:center;gap:10px;padding:10px 18px}.req .tx{flex:1}
+.top.stk{position:sticky;top:0;z-index:6;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);margin-top:calc(-1 * env(safe-area-inset-top));padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:8px;border-bottom:1px solid transparent}.top.stk.sh{border-bottom-color:var(--ln)}
+html{scroll-padding-top:80px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .art img,.g3 img,.chc img,.stc img,img.thumb{opacity:0;transition:opacity .3s}.art img.ok,.g3 img.ok,.chc img.ok,.stc img.ok,img.thumb.ok{opacity:1}
 .art,.g3 button,.chc .im,.stc .im{background:linear-gradient(100deg,var(--sf) 35%,var(--sf2) 50%,var(--sf) 65%) 0 0/250% 100%}
@@ -242,7 +244,7 @@ function setAdult(v){S.adult=!!v;try{localStorage.setItem('imagi_adult',v?'1':'0
 function setBg(v,save){if(!BGS.includes(v)||v===S.bg&&!save)return;S.bg=v;document.documentElement.dataset.bg=v;try{localStorage.setItem('imagi_bg',v)}catch(e){}if(save)saveState()}
 function markSeen(){const top=D.nt&&D.nt[0];if(!S.me||!top||top.at<=S.seen)return;S.seen=top.at;saveState()}
 function markThread(){if(S.view!=='dm'||!S.dmWith)return;const k=[S.me,S.dmWith].sort().join('__');const ms=S.dms.filter(m=>m.users.join('__')===k);const t=ms.length?ms[ms.length-1].at:0;if(t>(S.dmRead[k]||0)){S.dmRead={...S.dmRead,[k]:t};saveState()}}
-const SHAREV=['detail','char','story','read','comm'];const hdr=(t,right='')=>{const sh=SHAREV.includes(S.view)&&!S.nodb?`<button class="ib" data-act="share" aria-label="リンクを共有">${IC.share}</button>`:'';return`<header class="top"><button class="ib" data-act="back" aria-label="戻る">${IC.back}</button><div class="ttl">${t}</div><span style="display:flex;flex:none">${sh}${right||(sh?'':'<span class="ib"></span>')}</span></header>`};
+const SHAREV=['detail','char','story','read','comm'];const hdr=(t,right='')=>{const sh=SHAREV.includes(S.view)&&!S.nodb?`<button class="ib" data-act="share" aria-label="リンクを共有">${IC.share}</button>`:'';return`<header class="top stk"><button class="ib" data-act="back" aria-label="戻る">${IC.back}</button><div class="ttl">${t}</div><span style="display:flex;flex:none">${sh}${right||(sh?'':'<span class="ib"></span>')}</span></header>`};
 function likeBtn(id,big){const on=D.my.has(id);return`<button class="lk ${big?'big':''} ${on?'on':''}" data-act="like" data-id="${esc(id)}" aria-pressed="${on}" aria-label="いいね">${IC.heart}<span>${D.lc[id]||0}</span></button>`}
 function card(p){const hide=blurOf(p);const im=imgs(p),f=im[0]||{};const w=Number(f.w)||1,h=Number(f.h)||1;return`<article><button class="art" data-act="open" data-id="${esc(p.id)}" aria-label="${esc(p.title)}を開く"><img src="${src(f.t||f.asset)}" alt="" loading="lazy" style="aspect-ratio:${w}/${h}" class="${hide?'nsfw':''}"><span class="ai">AI</span>${im.length>1?`<span class="cnt">${im.length}枚</span>`:''}${hide?'<span class="sens">センシティブな内容</span>':''}</button><div class="ct">${esc(p.title)}</div><div class="cm"><button class="who" data-act="user" data-id="${esc(p.author)}">${av(p.author,'s')}<span>${esc(nm(p.author))}</span></button>${likeBtn(p.id)}</div></article>`}
 function masonry(list){const cols=[[],[]],hs=[0,0];list.forEach(p=>{const f=imgs(p)[0]||{};const i=hs[0]<=hs[1]?0:1;cols[i].push(p);hs[i]+=(Number(f.h)||1)/(Number(f.w)||1)+.35});return`<div class="grid">${cols.map(c=>`<div class="col">${c.map(card).join('')}</div>`).join('')}</div>`}
@@ -741,6 +743,7 @@ const user=S.user;if(!S.me)S.readOnly=true;openRoute();render();
 db.live();db.load().catch(()=>{clearTimeout(timer);S.loaded=true;toast('データを読み込めませんでした')});
 setInterval(()=>{const now=Date.now();const due=[...S.myFuture,...S.myFutureChars].some(x=>Number(x.pubAt)<=now)||S.eps.some(e=>e.pubAt&&Number(e.pubAt)<=now&&Number(e.pubAt)>now-30e3);if(due){applyFilters();rebuild();if(!isForm())render()}},15000);
 setInterval(()=>{if(!document.hidden)db.load().catch(()=>{})},300000);
+window.addEventListener('scroll',()=>{const h=document.querySelector('.top.stk');if(h)h.classList.toggle('sh',scrollY>4)},{passive:true});
 let hid=0;document.addEventListener('visibilitychange',()=>{if(document.hidden){hid=Date.now()}else if(hid&&Date.now()-hid>60000){db.load().catch(()=>{})}});
 
 const fail=()=>{clearTimeout(timer);S.loaded=true;toast('データを読み込めませんでした')};
